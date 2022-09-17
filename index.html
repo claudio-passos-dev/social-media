@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body{ font: 14px sans-serif; text-align: center; }
+        .wrapper{ width: 360px; padding: 20px; }
+    </style>
+<!-- https://github.com/claudio-passos-dev/social-media -->
+</head>
+<body>
+    <div class="welcome"></div>
+    <p>
+    <hr>
+    <div class="row justify-content-md-center ">
+    <div class="wrapper">
+        <div class="form-group">
+            <label>Avatar URL</label>
+            <input type="text" id="avatarurl" class="form-control" value="">
+            <div class="form-group" style="color:red;font-size:12px" id="error"></div>
+        </div>  
+    </div>
+</div>
+        <input type="button" id="changeavatar" class="btn btn-success" value="Change avatar">
+        <input type="button" id="signout" class="btn btn-danger ml-3" value="Sign Out">
+    </p>
+</body>
+
+<script
+			  src="https://code.jquery.com/jquery-3.6.1.min.js"
+			  integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="
+			  crossorigin="anonymous">
+</script>
+
+<script>
+$( document ).ready(() => {
+        var token = localStorage.getItem("token");
+
+        if (!token){
+            window.location.replace("/login.html")
+        }
+        
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:3001/me",
+            headers: {"authorization": "Bearer " + token}                        
+        })
+        .done(function(data) {   
+            $(".welcome").append('<h1 class="my-5">Hi, <b>'+ data.username  +'</b>. Welcome to our site.</h1><br>')
+            if (data.photo){
+                $(".welcome").append('<img width="300" height="300" src="' + data.photo + '">')
+            }
+        })
+        .fail((err) => {
+            window.location.replace("/login.html")
+        })
+    })
+
+
+$("#signout").click(()=>{
+    localStorage.removeItem("token");
+    window.location.replace("/login.html")
+})
+
+$("#changeavatar").click(() => {
+    var token = localStorage.getItem("token")
+    var photo_link = $("#avatarurl").val()
+
+    $.ajax({
+        type: "PATCH",
+        url: "http://localhost:3001/me",
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify({photo_link: photo_link}),
+        headers: {"authorization": "Bearer " + token},
+        success: null,
+        dataType: "json"                      
+    })
+    .done(function(data) {   
+        location.reload();
+    })
+    .fail((err) => {
+        $("#error").empty()
+        $("#error").append(err.responseJSON.msg)
+    })
+
+})
+    </script>
+
+</html>
